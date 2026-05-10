@@ -11,17 +11,18 @@ interface NavbarProps {
   cartCount: number;
   onOpenCart: () => void;
   onNavigate: (view: 'home' | 'checkout' | 'confirmation') => void;
+  onScrollToSection: (sectionId: string) => void;
 }
 
-export default function Navbar({ cartCount, onOpenCart, onNavigate }: NavbarProps) {
+export default function Navbar({ cartCount, onOpenCart, onNavigate, onScrollToSection }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
-    { name: 'Početna', href: '#home' },
-    { name: 'Ponuda', href: '#products' },
-    { name: 'Kako poručiti', href: '#how-it-works' },
-    { name: 'Dostava', href: '#delivery' },
-    { name: 'Kontakt', href: '#contact' },
+    { name: 'Početna', sectionId: 'home' },
+    { name: 'Ponuda', sectionId: 'products' },
+    { name: 'Kako poručiti', sectionId: 'how-it-works' },
+    { name: 'Dostava', sectionId: 'delivery' },
+    { name: 'Kontakt', sectionId: 'contact' },
   ];
 
   return (
@@ -29,14 +30,14 @@ export default function Navbar({ cartCount, onOpenCart, onNavigate }: NavbarProp
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
-          <div 
+          <div
             className="flex-shrink-0 flex items-center cursor-pointer"
             onClick={() => {
               onNavigate('home');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
           >
-            <span className="text-xl md:text-2fr font-display font-bold text-brand-green">
+            <span className="text-xl md:text-2xl font-display font-bold text-brand-green">
               Domaće Gnezdo
             </span>
           </div>
@@ -44,19 +45,14 @@ export default function Navbar({ cartCount, onOpenCart, onNavigate }: NavbarProp
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <a
+              <button
                 key={link.name}
-                href={link.href}
+                type="button"
                 className="text-sm font-medium text-gray-600 hover:text-brand-green transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onNavigate('home');
-                  const el = document.querySelector(link.href);
-                  el?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => onScrollToSection(link.sectionId)}
               >
                 {link.name}
-              </a>
+              </button>
             ))}
           </div>
 
@@ -95,20 +91,17 @@ export default function Navbar({ cartCount, onOpenCart, onNavigate }: NavbarProp
           >
             <div className="px-4 pt-2 pb-6 space-y-1">
               {navLinks.map((link) => (
-                <a
+                <button
                   key={link.name}
-                  href={link.href}
-                  className="block px-3 py-4 text-base font-medium text-gray-600 hover:bg-brand-beige rounded-lg"
-                  onClick={(e) => {
-                    e.preventDefault();
+                  type="button"
+                  className="block w-full text-left px-3 py-4 text-base font-medium text-gray-600 hover:bg-brand-beige rounded-lg"
+                  onClick={() => {
                     setIsMenuOpen(false);
-                    onNavigate('home');
-                    const el = document.querySelector(link.href);
-                    el?.scrollIntoView({ behavior: 'smooth' });
+                    onScrollToSection(link.sectionId);
                   }}
                 >
                   {link.name}
-                </a>
+                </button>
               ))}
             </div>
           </motion.div>

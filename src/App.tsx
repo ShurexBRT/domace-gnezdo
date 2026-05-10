@@ -27,6 +27,21 @@ export default function App() {
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  const scrollToSection = (sectionId: string) => {
+    const runScroll = () => {
+      const el = document.getElementById(sectionId);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    if (view !== 'home') {
+      setView('home');
+      window.setTimeout(runScroll, 80);
+      return;
+    }
+
+    runScroll();
+  };
+
   const handleAddToCart = (item: CartItem) => {
     setCartItems(prev => {
       const existing = prev.find(i => i.id === item.id);
@@ -39,7 +54,7 @@ export default function App() {
   };
 
   const handleUpdateQuantity = (id: string, delta: number) => {
-    setCartItems(prev => 
+    setCartItems(prev =>
       prev.map(i => i.id === id ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i)
     );
   };
@@ -66,10 +81,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <Navbar 
-        cartCount={cartCount} 
-        onOpenCart={() => setIsCartOpen(true)} 
+      <Navbar
+        cartCount={cartCount}
+        onOpenCart={() => setIsCartOpen(true)}
         onNavigate={handleNavigate}
+        onScrollToSection={scrollToSection}
       />
 
       <AnimatePresence mode="wait">
@@ -80,27 +96,27 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <Hero onStartShopping={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })} />
-            
+            <Hero onStartShopping={() => scrollToSection('products')} />
+
             {/* Trust Strip */}
             <div className="bg-white border-y border-brand-beige py-8">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
                   <div className="space-y-1">
-                    <p className="text-xl font-bold text-gray-900">Sveža jaja</p>
-                    <p className="text-sm text-gray-500">Pravo iz dvorišta</p>
+                    <p className="text-xl font-bold text-gray-900">400 RSD</p>
+                    <p className="text-sm text-gray-500">10 domaćih jaja</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xl font-bold text-gray-900">Pakovanje 10 kom</p>
-                    <p className="text-sm text-gray-500">Standardna mera</p>
+                    <p className="text-xl font-bold text-gray-900">3+ pakovanja</p>
+                    <p className="text-sm text-gray-500">Besplatna dostava</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xl font-bold text-gray-900">40 RSD</p>
-                    <p className="text-sm text-gray-500">Cena po jajetu</p>
+                    <p className="text-xl font-bold text-gray-900">450 RSD</p>
+                    <p className="text-sm text-gray-500">Dostava za 1–2 pakovanja</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xl font-bold text-gray-900">Lokalna dostava</p>
-                    <p className="text-sm text-gray-500">Brzo i sigurno</p>
+                    <p className="text-xl font-bold text-gray-900">Sreda i subota</p>
+                    <p className="text-sm text-gray-500">Planirane ture dostave</p>
                   </div>
                 </div>
               </div>
@@ -118,10 +134,10 @@ export default function App() {
               <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 className="text-3xl md:text-5xl font-bold mb-6">Spremni za sveža domaća jaja?</h2>
                 <p className="text-lg opacity-90 mb-10 max-w-xl mx-auto">
-                  Izaberite broj pakovanja i pošaljite porudžbinu za manje od minut.
+                  Najisplativije je 3 pakovanja: 30 jaja za 1.200 RSD i besplatna dostava.
                 </p>
                 <button
-                  onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => scrollToSection('products')}
                   className="px-12 py-4 bg-white text-brand-green font-bold rounded-full shadow-2xl hover:bg-brand-cream transition-all transform hover:-translate-y-1"
                 >
                   Naruči odmah
@@ -140,9 +156,10 @@ export default function App() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
           >
-            <CheckoutForm 
-              items={cartItems} 
-              onBack={() => handleNavigate('home')} 
+            <CheckoutForm
+              items={cartItems}
+              onBack={() => handleNavigate('home')}
+              onBackToProducts={() => scrollToSection('products')}
               onSubmit={handleSubmitOrder}
             />
             <Footer />
@@ -156,22 +173,26 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
           >
-            <OrderConfirmation 
-              order={order} 
-              onBackToHome={() => handleNavigate('home')} 
+            <OrderConfirmation
+              order={order}
+              onBackToHome={() => handleNavigate('home')}
             />
             <Footer />
           </motion.div>
         )}
       </AnimatePresence>
 
-      <CartDrawer 
+      <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         items={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
         onCheckout={handleCheckout}
+        onViewProducts={() => {
+          setIsCartOpen(false);
+          scrollToSection('products');
+        }}
       />
     </div>
   );

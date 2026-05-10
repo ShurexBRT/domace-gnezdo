@@ -9,28 +9,28 @@ const steps = [
   {
     number: '01',
     title: 'Izaberite broj pakovanja',
-    text: 'Odlučite koliko svežih jaja vam je potrebno (prodaja ide na 10 komada).',
+    text: 'Jedno pakovanje ima 10 jaja. Za 3 ili više pakovanja dostava je besplatna.',
   },
   {
     number: '02',
-    title: 'Unesite podatke',
-    text: 'Popunite jednostavnu formu sa adresom i kontaktom za dostavu.',
+    title: 'Unesite adresu',
+    text: 'Popunite kratku formu sa kontaktom, adresom i napomenom za dostavu.',
   },
   {
     number: '03',
-    title: 'Potvrda i dostava',
-    text: 'Kontaktiramo vas za potvrdu i donosimo jaja na vaš kućni prag.',
+    title: 'Dostava sredom ili subotom',
+    text: 'Sistem automatski prikazuje prvi mogući termin. Porudžbine se primaju najmanje dan ranije do 18:00.',
   },
 ];
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 bg-white">
+    <section id="how-it-works" className="py-20 bg-white scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Kako poručiti?</h2>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            Proces je brz i jednostavan, baš kao što bi domaća kupovina trebalo da bude.
+            Proces je brz i jednostavan, a dostava je organizovana po unapred definisanim rutama.
           </p>
         </div>
 

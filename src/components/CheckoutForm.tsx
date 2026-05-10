@@ -3,17 +3,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, CalendarDays, Truck } from 'lucide-react';
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { CartItem, OrderData } from '../types';
+import {
+  DELIVERY,
+  formatRsd,
+  formatSerbianDate,
+  getDeliveryDeadline,
+  getDeliveryFee,
+  getNextDeliveryDate,
+  getOrderTotal,
+  getSubtotal,
+} from '../constants';
 
 interface CheckoutFormProps {
   items: CartItem[];
   onBack: () => void;
+  onBackToProducts: () => void;
   onSubmit: (order: OrderData) => void;
 }
 
-export default function CheckoutForm({ items, onBack, onSubmit }: CheckoutFormProps) {
+export default function CheckoutForm({ items, onBack, onBackToProducts, onSubmit }: CheckoutFormProps) {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -25,14 +36,23 @@ export default function CheckoutForm({ items, onBack, onSubmit }: CheckoutFormPr
 
   const totalPackages = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalEggs = items.reduce((sum, item) => sum + (item.quantity * item.eggsPerPackage), 0);
-  const totalPrice = items.reduce((sum, item) => sum + (item.quantity * item.pricePerPackage), 0);
+  const subtotal = getSubtotal(totalPackages);
+  const deliveryFee = getDeliveryFee(totalPackages);
+  const totalPrice = getOrderTotal(totalPackages);
+  const deliveryDate = getNextDeliveryDate();
+  const deliveryDeadline = getDeliveryDeadline(deliveryDate);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit({
       items,
+      subtotal,
+      deliveryFee,
       totalPrice,
       totalEggs,
+      totalPackages,
+      deliveryDate: deliveryDate.toISOString(),
+      deliveryDeadline: deliveryDeadline.toISOString(),
       customer: formData,
     });
   };
@@ -42,6 +62,25 @@ export default function CheckoutForm({ items, onBack, onSubmit }: CheckoutFormPr
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen bg-brand-cream pt-24 pb-20 flex items-center justify-center">
+        <div className="max-w-xl mx-auto px-4 text-center">
+          <div className="bg-white rounded-[2rem] border border-brand-beige p-10 shadow-sm">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Korpa je prazna</h2>
+            <p className="text-gray-600 mb-8">Dodajte bar jedno pakovanje domaćih jaja pre nego što nastavite na poručivanje.</p>
+            <button
+              onClick={onBackToProducts}
+              className="px-8 py-4 bg-brand-green text-white font-bold rounded-full shadow-lg hover:bg-opacity-90 transition-all"
+            >
+              Nazad na ponudu
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-brand-cream pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,15 +89,35 @@ export default function CheckoutForm({ items, onBack, onSubmit }: CheckoutFormPr
           className="flex items-center gap-2 text-gray-600 hover:text-brand-green mb-8 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>Nazad na korpu</span>
+          <span>Nazad na početnu</span>
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Form */}
           <div className="lg:col-span-12 xl:col-span-7">
             <div className="bg-white rounded-3xl p-8 md:p-12 border border-brand-beige shadow-sm">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Podaci za dostavu</h2>
-              
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Podaci za dostavu</h2>
+              <p className="text-gray-600 mb-8">
+                Dostava se vrši sredom i subotom. Vaš prvi mogući termin je <strong>{formatSerbianDate(deliveryDate)}</strong>.
+              </p>
+
+              <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-2xl bg-brand-cream border border-brand-beige p-4 flex gap-3">
+                  <CalendarDays className="w-5 h-5 text-brand-green mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">Planirani dan dostave</p>
+                    <p className="text-sm text-gray-600">{formatSerbianDate(deliveryDate)}</p>
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-brand-cream border border-brand-beige p-4 flex gap-3">
+                  <Truck className="w-5 h-5 text-brand-green mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">Pravila dostave</p>
+                    <p className="text-sm text-gray-600">{DELIVERY.orderDeadlineText}</p>
+                  </div>
+                </div>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -155,15 +214,15 @@ export default function CheckoutForm({ items, onBack, onSubmit }: CheckoutFormPr
           <div className="lg:col-span-12 xl:col-span-5">
             <div className="bg-white rounded-3xl p-8 border border-brand-beige shadow-sm sticky top-28">
               <h3 className="text-xl font-bold text-gray-900 mb-6">Pregled porudžbine</h3>
-              
+
               <div className="space-y-4 mb-8">
                 {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-start">
+                  <div key={item.id} className="flex justify-between items-start gap-4">
                     <div>
                       <p className="font-bold text-gray-900">{item.name}</p>
-                      <p className="text-sm text-gray-500">{item.quantity} pakovanja x {item.eggsPerPackage} jaja</p>
+                      <p className="text-sm text-gray-500">{item.quantity} pakovanja × {item.eggsPerPackage} jaja</p>
                     </div>
-                    <span className="font-bold text-brand-green">{item.quantity * item.pricePerPackage} RSD</span>
+                    <span className="font-bold text-brand-green whitespace-nowrap">{formatRsd(item.quantity * item.pricePerPackage)}</span>
                   </div>
                 ))}
               </div>
@@ -177,9 +236,17 @@ export default function CheckoutForm({ items, onBack, onSubmit }: CheckoutFormPr
                   <span>Ukupno jaja:</span>
                   <span className="font-medium text-gray-900">{totalEggs}</span>
                 </div>
-                <div className="flex justify-between text-xl font-bold text-gray-900 mt-2">
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>Međuzbir:</span>
+                  <span className="font-medium text-gray-900">{formatRsd(subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>Dostava:</span>
+                  <span className="font-medium text-gray-900">{deliveryFee === 0 ? 'Besplatna' : formatRsd(deliveryFee)}</span>
+                </div>
+                <div className="flex justify-between text-xl font-bold text-gray-900 mt-2 pt-3 border-t border-dashed border-brand-beige">
                   <span>Ukupan iznos:</span>
-                  <span className="text-brand-green">{totalPrice} RSD</span>
+                  <span className="text-brand-green">{formatRsd(totalPrice)}</span>
                 </div>
               </div>
 
@@ -188,6 +255,14 @@ export default function CheckoutForm({ items, onBack, onSubmit }: CheckoutFormPr
                 <div>
                   <p className="text-sm font-bold text-gray-900">Način plaćanja</p>
                   <p className="text-sm text-gray-600">Plaćanje prilikom dostave (gotovina)</p>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-green-50 rounded-2xl border border-green-100 flex items-start gap-3">
+                <CalendarDays className="w-5 h-5 text-brand-green shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-gray-900">Prvi mogući termin</p>
+                  <p className="text-sm text-gray-600">{formatSerbianDate(deliveryDate)}</p>
                 </div>
               </div>
             </div>
