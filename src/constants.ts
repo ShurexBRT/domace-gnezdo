@@ -17,7 +17,7 @@ export const COLORS = {
 };
 
 export const IMAGES = {
-  hero: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3cdd?q=80&w=2070&auto=format&fit=crop',
+  hero: '/images/domaca-jaja-hero.png',
   product: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=1974&auto=format&fit=crop',
   farm: 'https://images.unsplash.com/photo-1569251890311-db692543337e?q=80&w=1974&auto=format&fit=crop',
 };
